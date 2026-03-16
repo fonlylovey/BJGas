@@ -1,0 +1,25 @@
+{
+  "name": "bjgas",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 8081",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.183.2",
+    "vue": "^3.5.13",
+    "vue-router": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "@types/three": "^0.183.1",
+    "@vitejs/plugin-vue": "^5.2.3",
+    "@vue/tsconfig": "^0.7.0",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5",
+    "vue-tsc": "^2.2.8"
+  }
+}
