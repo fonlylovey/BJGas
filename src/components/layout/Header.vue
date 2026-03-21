@@ -2,7 +2,7 @@
   <header class="app-header">
     <!-- Logo 区域 -->
     <div class="header-logo">
-      <span class="sys-name">智能调压箱</span>
+      <span class="sys-name">中低压智慧调压箱</span>
       <span class="separator">·</span>
       <span class="company-name">北京北燃环能科技发展有限公司</span>
     </div>
@@ -25,12 +25,13 @@
 
 <style scoped>
 .app-header {
+  background: transparent;
+  background-color: transparent;
   height: 60px;
   padding: 0 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #a81414;
 }
 
 .header-logo {
@@ -58,8 +59,8 @@
 .separator {
   font-size: 18px;
   font-weight: bold;
-  color: #3f3a3a;
-  opacity: 0.5;
+  color: #000000;
+  opacity: 0.3;
 }
 .company-name {
   font-size: 18px;

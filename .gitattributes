@@ -1,0 +1,2 @@
+src/assets/Models/TYX/A5Test.fbx filter=lfs diff=lfs merge=lfs -text
+*.fbx filter=lfs diff=lfs merge=lfs -text

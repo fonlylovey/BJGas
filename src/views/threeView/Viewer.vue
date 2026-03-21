@@ -1,126 +1,143 @@
 <template>
-  <div class="three-viewer">
-    <div ref="container" class="three-container"></div>
+  <!-- 必须只有一个根节点！！ -->
+  <div class="viewer-wrapper">
+
+    <!-- 3D场景 -->
+    <div class="three-viewer">
+      <div ref="containerRef" class="three-container" @click="onMouseLeftClicked"></div>
+    </div>
+
+    <!-- 标签层 -->
+    <div id="labels-overlay" class="labels-overlay">
+      <svg id="callout-lines" class="callout-lines"></svg>
+      <div id="labels-container" class="labels-container"></div>
+    </div>
+
+    <!-- 进度条（放在最后，层级最高） -->
+    <LoadingProgress ref="loadingRef" />
+
   </div>
 </template>
 
 <script setup lang="ts">
+import { Three3DInstance } from '@/three3D/Three3D';
 import { ref, onMounted, onUnmounted } from 'vue';
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { modelDB } from '@/three3D/ModelDB';
+import LoadingProgress from '@/components/common/LoadingProgress.vue'
 
-// Three.js 容器
-const container = ref<HTMLDivElement | null>(null);
+const containerRef = ref<HTMLDivElement | null>(null);
+const loadingRef = ref<any>(null);
 
-// Three.js 核心对象
-let scene: THREE.Scene;
-let camera: THREE.PerspectiveCamera;
-let renderer: THREE.WebGLRenderer;
-let cube: THREE.Mesh;
-let controls: OrbitControls;
+const modelUrl = new URL('@/assets/Models/TYX/456.fbx', import.meta.url).href;
 
-// 初始化 Three.js
-const initThree = () => {
-  if (!container.value) return;
-
-  // 1. 创建场景
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xe8f2fc);
-
-  // 2. 创建相机
-  camera = new THREE.PerspectiveCamera(
-    75,
-    container.value.clientWidth / container.value.clientHeight,
-    0.1,
-    1000
-  );
-  camera.position.z = 5;
-
-  // 3. 创建渲染器
-  renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(container.value.clientWidth, container.value.clientHeight);
-  container.value.appendChild(renderer.domElement);
-
-  // 4. 轨道控制器
-  controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-  controls.target.set(0, 0.3, 0); // 围绕模型中心旋转
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.05;
-  controls.minDistance = 2;
-  controls.maxDistance = 12;
-
-  // 5. 创建立方体
-  const geometry = new THREE.BoxGeometry(1, 1, 1);
-  const material = new THREE.MeshNormalMaterial();
-  cube = new THREE.Mesh(geometry, material);
-  scene.add(cube);
-
-  // 6. 坐标轴辅助线
-  const axesHelper = new THREE.AxesHelper(3);
-  scene.add(axesHelper);
-
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-  scene.add(ambientLight);
-
-  const floorGeom = new THREE.PlaneGeometry(20, 20);
-  const floorMat = new THREE.MeshStandardMaterial({
-  color: 0xd8e4f0,
-  roughness: 0.9,
-  metalness: 0,
-  });
-  const floor = new THREE.Mesh(floorGeom, floorMat);
-  floor.rotation.x = -Math.PI / 2;
-  floor.position.y = -0.5;
-  floor.receiveShadow = true;
-  scene.add(floor);
-  // 地面网格线
-  const gridHelper = new THREE.GridHelper(20, 20, 0xb8c8d8, 0xc8d4e0);
-  gridHelper.position.y = -0.48;
-
-  function animate() {
-      requestAnimationFrame(animate);
-      controls.update(); // 关键！没有这行无法控制
-      renderer.render(scene, camera);
-      
-    }
-    animate();
-
-  scene.add(gridHelper);
+const initScene = async () => {
+  try {
+    // 显示进度条
+    loadingRef.value?.show();
+    const model = await modelDB.loadFBXModel(modelUrl, (percent, info) => {
+      loadingRef.value?.updateProgress(percent);
+      loadingRef.value?.updateProgressInfo(info);
+    });
+    
+    loadingRef.value?.hide();
+    model.layers.set(1);
+    Three3DInstance.addObject(model);
+    modelDB.modelObj = model;
+  } catch (error) {
+    loadingRef.value?.hide();
+    console.error('加载失败', error);
+  }
+  Three3DInstance.createCornerLogoMesh();
 };
 
-// 窗口适配
 const handleResize = () => {
-  if (!container.value || !camera || !renderer) return;
-  camera.aspect = container.value.clientWidth / container.value.clientHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(container.value.clientWidth, container.value.clientHeight);
+  if (!containerRef.value || !Three3DInstance.camera || !Three3DInstance.renderer) return;
+  Three3DInstance.camera.aspect = containerRef.value.clientWidth / containerRef.value.clientHeight;
+  Three3DInstance.camera.updateProjectionMatrix();
+  Three3DInstance.renderer.setSize(containerRef.value.clientWidth, containerRef.value.clientHeight);
 };
 
-// 生命周期
+const onMouseLeftClicked = (event: MouseEvent) => {
+  const clickedObject = Three3DInstance.onMouseClick(event);
+  if (clickedObject) {
+    if (clickedObject.type === 'Mesh') {
+      Three3DInstance.highLightObject(clickedObject);
+    } else {
+      Three3DInstance.currentSelected && Three3DInstance.unhighlightObject(Three3DInstance.currentSelected);
+    }
+  } else {
+    Three3DInstance.currentSelected && Three3DInstance.unhighlightObject(Three3DInstance.currentSelected);
+  }
+};
+
 onMounted(() => {
-  initThree();
+  if (containerRef.value) {
+    Three3DInstance.init(containerRef.value);
+
+    // 加载模型（内部会显示进度条）
+    //initScene();
+  }
   window.addEventListener('resize', handleResize);
+  window.addEventListener('dblclick', onMouseLeftClicked);
 });
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
-  renderer.dispose();
-  cube.geometry.dispose();
-  (cube.material as THREE.Material).dispose();
+  Three3DInstance.destroy();
 });
 </script>
 
 <style scoped>
+/* 根容器 */
+.viewer-wrapper {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+}
+
+/* 3D容器 */
 .three-viewer {
   width: 100%;
   height: 100%;
-  position: relative; 
-  z-index: 9999;
+  position: relative;
+  z-index: 1; /* 不要用9999 */
 }
 
 .three-container {
   width: 100%;
-  height: 100vh;
+  height: 100%;
+}
+
+.labels-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.callout-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -7;
+  }
+}
+
+.callout-lines line {
+  stroke: #0066cc;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+  animation: dash-flow 1.5s linear infinite;
+}
+
+.labels-container {
+  position: absolute;
+  inset: 0;
 }
 </style>
