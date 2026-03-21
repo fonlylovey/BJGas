@@ -15,7 +15,8 @@ const showContactModal = () => {
 
 <style scoped>
 .contact-btn {
-  width: 100%;
+  width: 220px;
+  height: 64px;
   padding: 12px 16px;
   border-radius: 6px;
   background-color: #1890ff;

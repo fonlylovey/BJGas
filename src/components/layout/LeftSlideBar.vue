@@ -62,7 +62,7 @@ const onClicked = (index: number) => {
   height: 64px;
   padding: 10px 18px;
   border: none;
-  border-radius: 10px;
+  border-radius: 40px;
   background: rgba(255, 255, 255, 0.85);
   color: #4a5f7a;
   font-size: 24px;
@@ -99,4 +99,29 @@ const onClicked = (index: number) => {
   padding: 0 16px;
   margin-top: auto;
 }
+
+.pill-auto {
+  width: 220px;
+  height: 64px;
+  border-radius: 40px;
+  margin-top: 16px;
+  border: 1px solid rgba(0, 102, 204, 0.2);
+}
+
+.pill-auto.playing {
+  color: #00a86b;
+  border-color: rgba(0, 168, 107, 0.4);
+  animation: breathe 2s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 2px 12px rgba(0, 168, 107, 0.2); }
+  50% { box-shadow: 0 4px 20px rgba(0, 168, 107, 0.35); }
+}
+
+.auto-icon {
+  display: inline-block;
+  margin-right: 4px;
+}
+
 </style>
