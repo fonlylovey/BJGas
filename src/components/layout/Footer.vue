@@ -25,7 +25,7 @@
 
       <!-- 第三组按钮 -->
       <div class="control-group">
-        <button class="control-btn">围栏样式1</button>
+        <button class="control-btn" @click="onTest">围栏样式1</button>
         <button class="control-btn">围栏样式2</button>
         <button class="control-btn">围栏样式3</button>
       </div>
@@ -38,6 +38,7 @@ import * as ViewpointControl from '@/three3D/ViewpointControl'
 import { modelDB } from '@/three3D/ModelDB';
 import { ref } from 'vue';
 import * as THREE from 'three';
+import { Three3DInstance } from '@/three3D/Three3D';
 
 const boxVisible = ref(true);        // 外箱是否可见
 const boxTransparent = ref(false);   // 外箱是否透明
@@ -82,13 +83,20 @@ function toggleBoxTransparency() {
           mat.depthWrite = !newTransparent; //
           mat.depthTest = !newTransparent; 
           mat.needsUpdate = true;
-          console.log("透明物体AA：", newTransparent);
+          console.log("透明物体AA：", item);
         });
     }
   });
   boxTransparent.value = newTransparent;
 }
 
+const onTest = () => {
+  const cameraData = Three3DInstance.getCameraPosition();
+if (cameraData) {
+    console.log('相机位置:', cameraData.position);
+    console.log('目标点:', cameraData.target);
+}
+};
 
 </script>
 

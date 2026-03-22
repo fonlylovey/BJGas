@@ -58,7 +58,7 @@ export class Three3D {
     const width = container.clientWidth;
     const height = container.clientHeight;
     this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    this.camera.position.set(0, 0, 5);
+    this.camera.position.set(2.76, 6.37, 3.82);
 
     // 初始化渲染器
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -198,6 +198,16 @@ export class Three3D {
         }
         requestAnimationFrame(tick);
     }
+}
+
+public getCameraPosition(): { position: THREE.Vector3; target: THREE.Vector3 } | null {
+  if (this.camera && this.controls) {
+      return {
+          position: this.camera.position.clone(),
+          target: this.controls.target.clone()
+      };
+  }
+  return null;
 }
 
   // 窗口大小适配

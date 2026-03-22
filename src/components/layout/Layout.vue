@@ -23,8 +23,11 @@
     </div>
 
     <div>
-      <button class="contact-btn" id="contactBtn" title="联系我们">联系我们</button>
+      <button class="contact-btn" id="contactBtn" title="联系我们" @click="onContact">联系我们</button>
     </div>
+
+    <!-- 联系我们弹窗 - 使用默认插槽内容 -->
+    <Modal v-model:visible="modalVisible" title="联系我们" />
   </div>
 </template>
 
@@ -34,28 +37,32 @@ import AppHeader from './Header.vue';
 import LeftSlideBar from './LeftSlideBar.vue';
 import AppFooter from './Footer.vue';
 import Viewer from '@/views/threeView/Viewer.vue';
-import InfoWidget from './InfoWidget.vue'
-import { SEGMENTSData } from '@/data/segments' // 导入数据
+import InfoWidget from './InfoWidget.vue';
+import Modal from '@/components/common/Modal.vue';
+import { SEGMENTSData } from '@/data/segments';
 
-// 弹窗显示状态（可抽离到 Pinia/Vuex 全局管理）
+// 弹窗显示状态
 const modalVisible = ref(false);
-const activeSegment = ref(0)
-const currentInfo  = computed(() => SEGMENTSData[activeSegment.value]);
+const activeSegment = ref(0);
+const currentInfo = computed(() => SEGMENTSData[activeSegment.value]);
 
 const handleSegmentSelected = (index: number) => {
   activeSegment.value = index;
   console.log("收到发射消息");
 }
 
+const onContact = () => {
+  modalVisible.value = true;
+}
 </script>
 
 <style scoped>
 /* 根容器：相对定位，铺满全屏 */
 .app-layout {
-  position: relative; /* 作为子元素绝对定位的参考 */
+  position: relative;
   width: 100vw;
   height: 100vh;
-  overflow: hidden; /* 防止滚动条 */
+  overflow: hidden;
   font-family: 'Noto Sans SC', -apple-system, sans-serif;
 }
 
@@ -66,17 +73,14 @@ const handleSegmentSelected = (index: number) => {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 0; /* 最低层级 */
+  z-index: 0;
 }
 
 .layout-overlay {
   position: relative;
-  z-index: 10; 
+  z-index: 10;
   height: 100%;
-  pointer-events: none; 
-  border: 10px;
-  padding: 10px;
-  margin: 10px;
+  pointer-events: none;
 }
 
 .layout-overlay > * {
@@ -85,26 +89,21 @@ const handleSegmentSelected = (index: number) => {
 
 .layout-overlay .app-header {
   height: 60px;
-  background-color: rgba(255, 255, 255, 0); /* 半透明背景 */
+  background-color: rgba(255, 255, 255, 0);
   padding: 0 16px;
   display: flex;
   align-items: center;
 }
 
-.layout-infoWidget{
+.layout-infoWidget {
   width: 50%;
 }
 
 .layout-main {
   display: flex;
   width: 160px;
-  height: calc(100% - 60px - 80px); /* 扣除 Header + Footer 高度 */
+  height: calc(100% - 60px - 80px);
   padding-top: 8px;
-}
-
-
-.layout-overlay .modal {
-  z-index: 100; /* 确保弹窗在最上层 */
 }
 
 .contact-btn {
@@ -117,7 +116,7 @@ const handleSegmentSelected = (index: number) => {
   padding: 10px 20px;
   border: none;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.85);;
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   color: #0066cc;
@@ -128,5 +127,12 @@ const handleSegmentSelected = (index: number) => {
   box-shadow: 0 2px 12px rgba(0, 102, 204, 0.15);
   border: 1px solid rgba(0, 102, 204, 0.2);
   transition: all 0.35s ease;
+}
+
+.contact-btn:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #0066cc;
+  box-shadow: 0 4px 16px rgba(0, 102, 204, 0.25);
+  transform: translateY(-2px);
 }
 </style>

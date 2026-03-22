@@ -15,7 +15,6 @@
 
     <!-- 进度条（放在最后，层级最高） -->
     <LoadingProgress ref="loadingRef" />
-
   </div>
 </template>
 
@@ -75,7 +74,7 @@ onMounted(() => {
     Three3DInstance.init(containerRef.value);
 
     // 加载模型（内部会显示进度条）
-    //initScene();
+    initScene();
   }
   window.addEventListener('resize', handleResize);
   window.addEventListener('dblclick', onMouseLeftClicked);
@@ -85,6 +84,7 @@ onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
   Three3DInstance.destroy();
 });
+
 </script>
 
 <style scoped>
