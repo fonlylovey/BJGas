@@ -28,6 +28,7 @@ const containerRef = ref<HTMLDivElement | null>(null);
 const loadingRef = ref<any>(null);
 
 const modelUrl = new URL('@/assets/Models/TYX/tyx_1.fbx', import.meta.url).href;
+const modelUrl2 = new URL('@/assets/Models/TYX/tyx_2.fbx', import.meta.url).href;
 
 const initScene = async () => {
   try {
@@ -39,14 +40,22 @@ const initScene = async () => {
     });
     
     loadingRef.value?.hide();
-    model.layers.set(1);
     Three3DInstance.addObject(model);
     modelDB.modelObj = model;
   } catch (error) {
     loadingRef.value?.hide();
     console.error('加载失败', error);
   }
-  Three3DInstance.createCornerLogoMesh();
+
+  //加载第二个围栏
+  try {
+    const model = await modelDB.loadFBXModel(modelUrl2);
+    model.scale.set(0.01, 0.01, 0.01);
+    model.visible = false;
+    Three3DInstance.addObject(model);
+    modelDB.modelLsit.push(model);
+  } catch (error) {
+  }
 };
 
 const handleResize = () => {

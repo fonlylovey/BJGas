@@ -1,10 +1,10 @@
 const SEGMENTS = [
   {
-    title: '智慧燃气调压整体方案',
-    body: '展示智能调压箱在安全、监测、调控与保障供电方面的综合能力。',
-    image: 'placeholder/opening-overview.png',
-    camera: { pos: [2.76, 6.37, 3.82], target: [0, 0.3, 0] },
-    highlightParts: ['outerBox', 'regulator', 'generator'],
+    title: '',
+    body: '',
+    image: 'g',
+    camera: { pos: [2.76, 6.37, 3.82], target: [0, 0, 0] },
+    highlightParts: [],
   },
   {
     title: '基础监测',

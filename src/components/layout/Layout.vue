@@ -16,7 +16,7 @@
         :title="currentInfo.title" 
         :body="currentInfo.body" 
         :image="currentInfo.image" 
-        :visible="true"
+        :visible="showInfoWidget"
         />
       </div>
       <AppFooter />
@@ -44,11 +44,17 @@ import { SEGMENTSData } from '@/data/segments';
 // 弹窗显示状态
 const modalVisible = ref(false);
 const activeSegment = ref(0);
+const showInfoWidget = ref(false);
 const currentInfo = computed(() => SEGMENTSData[activeSegment.value]);
 
 const handleSegmentSelected = (index: number) => {
   activeSegment.value = index;
-  console.log("收到发射消息");
+  if(index == 0){
+    showInfoWidget.value = false;
+  }
+  else{
+    showInfoWidget.value = true;
+  }
 }
 
 const onContact = () => {

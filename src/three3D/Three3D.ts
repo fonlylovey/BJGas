@@ -108,11 +108,12 @@ export class Three3D {
     const fillLight = new THREE.DirectionalLight(0xffffff, 0.4);
     fillLight.position.set(-3, 4, -3);
     this.scene.add(fillLight);
-
+    /*
     let geom = new THREE.BoxGeometry(1, 1, 1);
     const mesh = new THREE.Mesh(geom);
     mesh.position.set(-3, 4, -3);
     this.scene.add(mesh);
+    */
     // 启动渲染循环
     this.render();
 
@@ -280,7 +281,7 @@ public getCameraPosition(): { position: THREE.Vector3; target: THREE.Vector3 } |
     if (intersects.length > 0) {
       // 找到第一个可点击的物体（你可以给模型加 userData.isClickable = true 来标记）
       let clickedObject = intersects[0].object;
-      
+      console.log("点击物体：", clickedObject);
       return clickedObject;
       /*
       // 向上遍历，找到父级模型（如果点击的是子网格）

@@ -25,9 +25,8 @@
 
       <!-- 第三组按钮 -->
       <div class="control-group">
-        <button class="control-btn" @click="onTest">围栏样式1</button>
-        <button class="control-btn">围栏样式2</button>
-        <button class="control-btn">围栏样式3</button>
+        <button class="control-btn" @click="onBoxStyle(1)">围栏样式1</button>
+        <button class="control-btn" @click="onBoxStyle(2)">围栏样式2</button>
       </div>
     </div>
   </footer>
@@ -36,12 +35,13 @@
 <script setup lang="ts">
 import * as ViewpointControl from '@/three3D/ViewpointControl'
 import { modelDB } from '@/three3D/ModelDB';
-import { ref } from 'vue';
+import { compile, ref } from 'vue';
 import * as THREE from 'three';
 import { Three3DInstance } from '@/three3D/Three3D';
 
 const boxVisible = ref(true);        // 外箱是否可见
 const boxTransparent = ref(false);   // 外箱是否透明
+let currentBox = modelDB.modelLsit[0];
 
 function zoomIn(){
   ViewpointControl.zoomIn();
@@ -53,14 +53,16 @@ function zoomOut(){
 
 // 切换外箱可见性
 function toggleBoxVisibility() {
-  if (!modelDB.modelObj) return;
+  if (!modelDB.modelObj && !currentBox) return;
 
   const newVisibility = !boxVisible.value;
+  /*
   modelDB.modelObj.children.forEach(item => {
     if (item.name === '调压箱01') {
       item.visible = newVisibility;
     }
-  });
+  });*/
+  currentBox.visible = newVisibility;
   boxVisible.value = newVisibility;
 }
 
@@ -70,32 +72,51 @@ function toggleBoxTransparency() {
 
   const newTransparent = !boxTransparent.value;
    
-  // 遍历找到外箱物体，修改其材质的透明度
-  modelDB.modelObj.children.forEach(item => {
-    if (item.name === '调压箱01' && item instanceof THREE.Mesh ) {
+  if (currentBox &&  currentBox instanceof THREE.Mesh ) {
        // 处理单个材质或材质数组
-        const materials = Array.isArray(item.material) 
-          ? item.material 
-          : [item.material];
+        const materials = Array.isArray(currentBox.material) 
+          ? currentBox.material 
+          : [currentBox.material];
         materials.forEach((mat) => {
           mat.transparent = newTransparent;
           mat.opacity = newTransparent ? 0.35 : 1.0;
           mat.depthWrite = !newTransparent; //
           mat.depthTest = !newTransparent; 
           mat.needsUpdate = true;
-          console.log("透明物体AA：", item);
         });
     }
-  });
   boxTransparent.value = newTransparent;
 }
 
-const onTest = () => {
+const onBoxStyle = (index: number) => {
+  /*
   const cameraData = Three3DInstance.getCameraPosition();
-if (cameraData) {
-    console.log('相机位置:', cameraData.position);
-    console.log('目标点:', cameraData.target);
-}
+  if (cameraData) {
+      console.log('相机位置:', cameraData.position);
+      console.log('目标点:', cameraData.target);
+  }*/
+ modelDB.modelLsit.forEach(item =>{
+  console.log("模型组件列表：", item.name);
+ });
+ if(index == 1){
+  if (!modelDB.modelObj) return;
+    modelDB.modelObj.children.forEach(item => {
+      if (item.name === '箱体_箱子01') {
+        item.visible = true;
+        currentBox = item;
+      }
+    });
+    modelDB.modelLsit[0].visible = false;
+ } else if(index == 2) {
+    if (!modelDB.modelObj) return;
+      modelDB.modelObj.children.forEach(item => {
+        if (item.name === '箱体_箱子01') {
+          item.visible = false;
+        }
+      });
+      modelDB.modelLsit[0].visible = true;
+      currentBox = modelDB.modelLsit[0];
+ }
 };
 
 </script>

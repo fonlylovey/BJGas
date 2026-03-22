@@ -1,5 +1,5 @@
 <template>
-  <aside class="info-panel">
+  <aside class="info-panel" :class="{ hidden: !visible }">
       <h2 class="info-title" id="infoTitle">{{ title }}</h2>
       <div class="info-body" id="infoBody" v-html="body"></div>
       <!--<div class="info-image" id="infoImage">

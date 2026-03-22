@@ -79,7 +79,7 @@ export class ModelDB {
           const materials = Array.isArray(child.material) 
             ? child.material 
             : [child.material];
-            
+            this.modelLsit.push(child);
           materials.forEach((mat) => {
             mat.needsUpdate = true;
             
@@ -109,6 +109,7 @@ export class ModelDB {
   }
 
   public modelObj: THREE.Object3D | null = null;
+  public modelLsit: THREE.Object3D[] = [];
 }
 
 // 便捷导出：直接导出单例实例，不用每次 getInstance
