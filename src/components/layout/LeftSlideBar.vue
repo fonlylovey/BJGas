@@ -60,10 +60,40 @@ const emit = defineEmits<{
 const isAutoPlaying = ref(false);
 const currentAutoIndex = ref(0);
 const progressPercent = ref(0); // 当前进度 0-1
-const borderDuration = ref(5000); // 边框动画持续时间（毫秒），默认800ms
+const borderDuration = ref(5000); // 边框动画持续时间（毫秒），默认5000ms
 let autoPlayTimer: ReturnType<typeof setInterval> | null = null;
 let progressTimer: ReturnType<typeof setInterval> | null = null;
 let animationStartTime = 0;
+
+// 空闲计时相关
+const IDLE_TIME = 20000; // 20秒无操作自动播放
+let idleTimer: ReturnType<typeof setTimeout> | null = null;
+
+// 重置空闲计时器
+const resetIdleTimer = () => {
+  // 如果已经在自动播放状态，不需要重置计时器
+  if (isAutoPlaying.value) return;
+  
+  // 清除现有的计时器
+  if (idleTimer) {
+    clearTimeout(idleTimer);
+    idleTimer = null;
+  }
+  
+  // 设置新的计时器
+  idleTimer = setTimeout(() => {
+    console.log('页面20秒无操作，自动开始播放');
+    startAutoPlay();
+  }, IDLE_TIME);
+};
+
+// 监听用户操作
+const onUserActivity = () => {
+  // 只有在非自动播放状态时才重置计时器
+  if (!isAutoPlaying.value) {
+    resetIdleTimer();
+  }
+};
 
 // 获取当前按钮的进度值（只有当前播放的按钮才显示进度）
 const getProgress = (idx: number) => {
@@ -94,6 +124,9 @@ const updateProgress = () => {
 
 // 点击功能按钮的逻辑
 const onClicked = (index: number) => {
+  // 记录用户操作
+  onUserActivity();
+  
   // 如果正在自动播放，先停止
   if (isAutoPlaying.value) {
     stopAutoPlay();
@@ -140,6 +173,12 @@ const nextButton = () => {
 
 // 开始自动播放
 const startAutoPlay = () => {
+  // 清除空闲计时器
+  if (idleTimer) {
+    clearTimeout(idleTimer);
+    idleTimer = null;
+  }
+  
   if (autoPlayTimer) {
     clearInterval(autoPlayTimer);
   }
@@ -175,10 +214,16 @@ const stopAutoPlay = () => {
   currentAutoIndex.value = -1;
   progressPercent.value = 0;
   setModelComponentVisibility("调压箱01", true);
+  
+  // 停止自动播放后，重新启动空闲计时器
+  resetIdleTimer();
 }
 
 // 切换自动播放状态
 const toggleAutoPlay = () => {
+  // 记录用户操作
+  onUserActivity();
+  
   if (isAutoPlaying.value) {
     stopAutoPlay();
   } else {
@@ -189,6 +234,9 @@ const toggleAutoPlay = () => {
 // 监听点击外部区域停止播放
 const handleGlobalClick = (event: MouseEvent) => {
   const target = event.target as HTMLElement;
+  // 记录用户操作
+  onUserActivity();
+  
   // 如果点击的不是自动播放按钮、速度控制区域和按钮区域，且正在播放，则停止
   if (isAutoPlaying.value && 
       !target.closest('.pill-auto') && 
@@ -196,6 +244,21 @@ const handleGlobalClick = (event: MouseEvent) => {
       !target.closest('.pill-wrapper')) {
     stopAutoPlay();
   }
+}
+
+// 监听页面滚动
+const handleScroll = () => {
+  onUserActivity();
+}
+
+// 监听键盘事件
+const handleKeyPress = () => {
+  onUserActivity();
+}
+
+// 监听鼠标移动
+const handleMouseMove = () => {
+  onUserActivity();
 }
 
 // 监听 borderDuration 变化，更新轮播间隔
@@ -211,16 +274,30 @@ watch(borderDuration, (newDuration) => {
 
 // 监听页面点击事件
 onMounted(() => {
+  // 添加各种用户活动监听
   document.addEventListener('click', handleGlobalClick);
+  document.addEventListener('scroll', handleScroll);
+  document.addEventListener('keydown', handleKeyPress);
+  document.addEventListener('mousemove', handleMouseMove);
+  
+  // 启动空闲计时器
+  resetIdleTimer();
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', handleGlobalClick);
+  document.removeEventListener('scroll', handleScroll);
+  document.removeEventListener('keydown', handleKeyPress);
+  document.removeEventListener('mousemove', handleMouseMove);
+  
   if (autoPlayTimer) {
     clearInterval(autoPlayTimer);
   }
   if (progressTimer) {
     clearInterval(progressTimer);
+  }
+  if (idleTimer) {
+    clearTimeout(idleTimer);
   }
 });
 
