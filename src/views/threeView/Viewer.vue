@@ -23,6 +23,7 @@ import { Three3DInstance } from '@/three3D/Three3D';
 import { ref, onMounted, onUnmounted } from 'vue';
 import { modelDB } from '@/three3D/ModelDB';
 import LoadingProgress from '@/components/common/LoadingProgress.vue'
+import * as THREE from 'three';
 
 const containerRef = ref<HTMLDivElement | null>(null);
 const loadingRef = ref<any>(null);
@@ -35,7 +36,7 @@ const modelUrl5 = new URL('@/assets/Models/TYX/tyx_fence_2.fbx', import.meta.url
 
 const initScene = async () => {
   //加载调压箱主体
-  /*
+  
   try {
     // 显示进度条
     loadingRef.value?.show();
@@ -47,17 +48,22 @@ const initScene = async () => {
     loadingRef.value?.hide();
     Three3DInstance.addObject(model);
     modelDB.modelObj = model;
+    model.layers.set(1);
+    model.traverse((child) => {
+    if (child) {
+      child.layers.set(1);
+    }
+  });
   } catch (error) {
     loadingRef.value?.hide();
     console.error('加载失败', error);
-  }*/
+  }
   //加载调压器外箱
   try {
     const model = await modelDB.loadFBXModel(modelUrl2);
     model.visible = true;
-    model.layers.set(1);
     Three3DInstance.addObject(model);
-    modelDB.modelLsit.set("tyq_box", model);
+    modelDB.modelLsit.set("tyx_box", model);
   } catch (error) {
   }
 
@@ -67,6 +73,7 @@ const initScene = async () => {
     model.visible = true;
     Three3DInstance.addObject(model);
     modelDB.modelLsit.set("tyx_fence_1", model);
+    console.log("围栏1", model);
   } catch (error) {
   }
   //加载第二个围栏
@@ -76,6 +83,7 @@ const initScene = async () => {
     model.visible = false;
     Three3DInstance.addObject(model);
     modelDB.modelLsit.set("tyx_fence_2", model);
+    console.log("围栏2", model);
   } catch (error) {
   }
 

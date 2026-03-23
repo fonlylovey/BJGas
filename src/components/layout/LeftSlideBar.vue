@@ -144,6 +144,18 @@ const onClicked = (index: number) => {
     new THREE.Vector3(segment.camera.pos[0], segment.camera.pos[1], segment.camera.pos[2]),
     new THREE.Vector3(segment.camera.target[0], segment.camera.target[1], segment.camera.target[2])
   );
+
+  if (index == 7) {
+    modelDB.modelLsit.forEach((value, key) => {
+      value.visible = false;
+    });
+    modelDB.modelLsit.get("tyx_znbyq")!.visible = true;
+    modelDB.modelLsit.get("tyx_znbyq")!.traverse((child) => {
+      child.visible = true;
+    });
+    console.log("tyx_znbyq", modelDB.modelLsit.get("tyx_znbyq"));
+    
+  }
 }
 
 // 切换到下一个按钮

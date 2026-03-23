@@ -53,7 +53,6 @@ function zoomOut(){
 
 // 切换外箱可见性
 function toggleBoxVisibility() {
-  if (!modelDB.modelObj) return;
 
   const newVisibility = !boxVisible.value;
   if(StyleIndex.value == 1) {
@@ -63,12 +62,12 @@ function toggleBoxVisibility() {
     modelDB.modelLsit.get("tyx_fence_2")!.visible = newVisibility;
   }
   modelDB.modelLsit.get("tyx_box")!.visible = newVisibility;
+  //console.log("toggleBoxVisibility", modelDB.modelLsit.get("tyx_box"));
   boxVisible.value = newVisibility;
 }
 
 // 切换外箱透明状态
 function toggleBoxTransparency() {
-  if (!modelDB.modelObj || !boxVisible.value) return;
 
   const newTransparent = !boxTransparent.value;
   let currentFence = null, currentBox = null;
@@ -79,43 +78,55 @@ function toggleBoxTransparency() {
     currentFence = modelDB.modelLsit.get("tyx_fence_2");
   }
   currentBox = modelDB.modelLsit.get("tyx_box");
-  if (currentBox && currentBox instanceof THREE.Mesh ) {
-       // 处理单个材质或材质数组
-        const materials = Array.isArray(currentBox.material) 
-          ? currentBox.material 
-          : [currentBox.material];
-        materials.forEach((mat) => {
-          mat.transparent = newTransparent;
-          mat.opacity = newTransparent ? 0.35 : 1.0;
-          mat.depthWrite = !newTransparent; //
-          mat.depthTest = !newTransparent; 
-          mat.needsUpdate = true;
-        });
-    }
+  if (currentBox ) {
+    currentBox.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        // 处理单个材质或材质数组
+        const materials = Array.isArray(child.material) 
+          ? child.material 
+          : [child.material];
+        if(materials){
+            materials.forEach((mat) => {
+            mat.transparent = newTransparent;
+            mat.opacity = newTransparent ? 0.35 : 1.0;
+            mat.depthWrite = !newTransparent; //
+            mat.depthTest = !newTransparent; 
+            mat.needsUpdate = true;
+          });
+        }
+      }
+    });
+  }
 
-    if (currentFence && currentFence instanceof THREE.Mesh ) {
-       // 处理单个材质或材质数组
-        const materials = Array.isArray(currentFence.material) 
-          ? currentFence.material 
-          : [currentFence.material];
-        materials.forEach((mat) => {
-          mat.transparent = newTransparent;
-          mat.opacity = newTransparent ? 0.35 : 1.0;
-          mat.depthWrite = !newTransparent; //
-          mat.depthTest = !newTransparent; 
-          mat.needsUpdate = true;
-        });
-    }
+    if (currentFence ) {
+      currentFence.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        // 处理单个材质或材质数组
+        const materials = Array.isArray(child.material) 
+          ? child.material 
+          : [child.material];
+        if(materials){
+            materials.forEach((mat) => {
+            mat.transparent = newTransparent;
+            mat.opacity = newTransparent ? 0.35 : 1.0;
+            mat.depthWrite = !newTransparent; //
+            mat.depthTest = !newTransparent; 
+            mat.needsUpdate = true;
+          });
+        }
+      }
+    });
+  }
   boxTransparent.value = newTransparent;
 }
 
 const onBoxStyle = (index: number) => {
-  /*
+  
   const cameraData = Three3DInstance.getCameraPosition();
   if (cameraData) {
       console.log('相机位置:', cameraData.position);
       console.log('目标点:', cameraData.target);
-  }*/
+  }
  StyleIndex.value = index;
  modelDB.modelLsit.forEach(item =>{
   console.log("模型组件列表：", item.name);

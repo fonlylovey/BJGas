@@ -59,7 +59,8 @@ export class Three3D {
     const height = container.clientHeight;
     this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
     this.camera.position.set(2.76, 6.37, 3.82);
-
+    this.camera.layers.enable(1);
+    
     // 初始化渲染器
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(width, height);
@@ -270,7 +271,6 @@ public getCameraPosition(): { position: THREE.Vector3; target: THREE.Vector3 } |
     this.raycaster.setFromCamera(this.mouse, this.camera);
     this.raycaster.layers.set(1);
     // 3. 检测射线与物体的交点
-
     const visibleObjects: THREE.Object3D[] = [];
     this.scene.traverse(item =>{
         if(item.visible === true){
