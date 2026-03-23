@@ -27,14 +27,19 @@ import LoadingProgress from '@/components/common/LoadingProgress.vue'
 const containerRef = ref<HTMLDivElement | null>(null);
 const loadingRef = ref<any>(null);
 
-const modelUrl = new URL('@/assets/Models/TYX/tyx_znbyq.fbx', import.meta.url).href;
-const modelUrl2 = new URL('@/assets/Models/TYX/tyx_2.fbx', import.meta.url).href;
+const modelUrl1 = new URL('@/assets/Models/TYX/tyx_body.fbx', import.meta.url).href;
+const modelUrl2 = new URL('@/assets/Models/TYX/tyx_box.fbx', import.meta.url).href;
+const modelUrl3 = new URL('@/assets/Models/TYX/tyx_znbyq.fbx', import.meta.url).href;
+const modelUrl4 = new URL('@/assets/Models/TYX/tyx_fence_1.fbx', import.meta.url).href;
+const modelUrl5 = new URL('@/assets/Models/TYX/tyx_fence_2.fbx', import.meta.url).href;
 
 const initScene = async () => {
+  //加载调压箱主体
+  /*
   try {
     // 显示进度条
     loadingRef.value?.show();
-    const model = await modelDB.loadFBXModel(modelUrl, (percent, info) => {
+    const model = await modelDB.loadFBXModel(modelUrl1, (percent, info) => {
       loadingRef.value?.updateProgress(percent);
       loadingRef.value?.updateProgressInfo(info);
     });
@@ -45,15 +50,41 @@ const initScene = async () => {
   } catch (error) {
     loadingRef.value?.hide();
     console.error('加载失败', error);
-  }
-
-  //加载第二个围栏
+  }*/
+  //加载调压器外箱
   try {
     const model = await modelDB.loadFBXModel(modelUrl2);
+    model.visible = true;
+    model.layers.set(1);
+    Three3DInstance.addObject(model);
+    modelDB.modelLsit.set("tyq_box", model);
+  } catch (error) {
+  }
+
+  //加载第一个围栏
+  try {
+    const model = await modelDB.loadFBXModel(modelUrl4);
+    model.visible = true;
+    Three3DInstance.addObject(model);
+    modelDB.modelLsit.set("tyx_fence_1", model);
+  } catch (error) {
+  }
+  //加载第二个围栏
+  try {
+    const model = await modelDB.loadFBXModel(modelUrl5);
     model.scale.set(0.01, 0.01, 0.01);
     model.visible = false;
     Three3DInstance.addObject(model);
-    modelDB.modelLsit.push(model);
+    modelDB.modelLsit.set("tyx_fence_2", model);
+  } catch (error) {
+  }
+
+  //加载智能变压器
+  try {
+    const model = await modelDB.loadFBXModel(modelUrl3);
+    model.visible = false;
+    Three3DInstance.addObject(model);
+    modelDB.modelLsit.set("tyx_znbyq", model);
   } catch (error) {
   }
 };

@@ -41,7 +41,7 @@ import { Three3DInstance } from '@/three3D/Three3D';
 
 const boxVisible = ref(true);        // 外箱是否可见
 const boxTransparent = ref(false);   // 外箱是否透明
-let currentBox = modelDB.modelLsit[0];
+const StyleIndex = ref(1);
 
 function zoomIn(){
   ViewpointControl.zoomIn();
@@ -53,16 +53,16 @@ function zoomOut(){
 
 // 切换外箱可见性
 function toggleBoxVisibility() {
-  if (!modelDB.modelObj && !currentBox) return;
+  if (!modelDB.modelObj) return;
 
   const newVisibility = !boxVisible.value;
-  /*
-  modelDB.modelObj.children.forEach(item => {
-    if (item.name === '调压箱01') {
-      item.visible = newVisibility;
-    }
-  });*/
-  currentBox.visible = newVisibility;
+  if(StyleIndex.value == 1) {
+    modelDB.modelLsit.get("tyx_fence_1")!.visible = newVisibility;
+  } 
+  else if(StyleIndex.value == 2) {
+    modelDB.modelLsit.get("tyx_fence_2")!.visible = newVisibility;
+  }
+  modelDB.modelLsit.get("tyx_box")!.visible = newVisibility;
   boxVisible.value = newVisibility;
 }
 
@@ -71,12 +71,33 @@ function toggleBoxTransparency() {
   if (!modelDB.modelObj || !boxVisible.value) return;
 
   const newTransparent = !boxTransparent.value;
-   
-  if (currentBox &&  currentBox instanceof THREE.Mesh ) {
+  let currentFence = null, currentBox = null;
+  if(StyleIndex.value == 1) {
+    currentFence = modelDB.modelLsit.get("tyx_fence_1");
+  } 
+  else if(StyleIndex.value == 2) {
+    currentFence = modelDB.modelLsit.get("tyx_fence_2");
+  }
+  currentBox = modelDB.modelLsit.get("tyx_box");
+  if (currentBox && currentBox instanceof THREE.Mesh ) {
        // 处理单个材质或材质数组
         const materials = Array.isArray(currentBox.material) 
           ? currentBox.material 
           : [currentBox.material];
+        materials.forEach((mat) => {
+          mat.transparent = newTransparent;
+          mat.opacity = newTransparent ? 0.35 : 1.0;
+          mat.depthWrite = !newTransparent; //
+          mat.depthTest = !newTransparent; 
+          mat.needsUpdate = true;
+        });
+    }
+
+    if (currentFence && currentFence instanceof THREE.Mesh ) {
+       // 处理单个材质或材质数组
+        const materials = Array.isArray(currentFence.material) 
+          ? currentFence.material 
+          : [currentFence.material];
         materials.forEach((mat) => {
           mat.transparent = newTransparent;
           mat.opacity = newTransparent ? 0.35 : 1.0;
@@ -95,27 +116,17 @@ const onBoxStyle = (index: number) => {
       console.log('相机位置:', cameraData.position);
       console.log('目标点:', cameraData.target);
   }*/
+ StyleIndex.value = index;
  modelDB.modelLsit.forEach(item =>{
   console.log("模型组件列表：", item.name);
  });
- if(index == 1){
-  if (!modelDB.modelObj) return;
-    modelDB.modelObj.children.forEach(item => {
-      if (item.name === '箱体_箱子01') {
-        item.visible = true;
-        currentBox = item;
-      }
-    });
-    modelDB.modelLsit[0].visible = false;
- } else if(index == 2) {
-    if (!modelDB.modelObj) return;
-      modelDB.modelObj.children.forEach(item => {
-        if (item.name === '箱体_箱子01') {
-          item.visible = false;
-        }
-      });
-      modelDB.modelLsit[0].visible = true;
-      currentBox = modelDB.modelLsit[0];
+ if(index == 1) {
+    modelDB.modelLsit.get("tyx_fence_1")!.visible = true;
+    modelDB.modelLsit.get("tyx_fence_2")!.visible = false;
+ } 
+ else if(index == 2) {
+      modelDB.modelLsit.get("tyx_fence_1")!.visible = false;
+      modelDB.modelLsit.get("tyx_fence_2")!.visible = true;
  }
 };
 

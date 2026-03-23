@@ -193,8 +193,8 @@ export class Three3D {
         const tick = () => {
             const t = Math.min(1, (Date.now() - startTime) / 800);
             const ease = 1 - (1 - t) * (1 - t); // easeOutQuad
-            this.camera.position.lerpVectors(startPos, position, ease);
-            this.controls.target.lerpVectors(startTarget, target, ease);
+            this.camera!.position.lerpVectors(startPos, position, ease);
+            this.controls!.target.lerpVectors(startTarget, target, ease);
             if (t < 1) requestAnimationFrame(tick);
         }
         requestAnimationFrame(tick);
@@ -268,7 +268,7 @@ public getCameraPosition(): { position: THREE.Vector3; target: THREE.Vector3 } |
     this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
     // 2. 更新射线
     this.raycaster.setFromCamera(this.mouse, this.camera);
-    //this.raycaster.layers.set(1);
+    this.raycaster.layers.set(1);
     // 3. 检测射线与物体的交点
 
     const visibleObjects: THREE.Object3D[] = [];
@@ -277,7 +277,7 @@ public getCameraPosition(): { position: THREE.Vector3; target: THREE.Vector3 } |
             visibleObjects.push(item);
         }
     })
-    const intersects = this.raycaster.intersectObjects(visibleObjects, false);
+    const intersects = this.raycaster.intersectObjects(visibleObjects, true);
     if (intersects.length > 0) {
       // 找到第一个可点击的物体（你可以给模型加 userData.isClickable = true 来标记）
       let clickedObject = intersects[0].object;
