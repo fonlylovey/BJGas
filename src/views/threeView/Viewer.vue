@@ -27,7 +27,7 @@ import LoadingProgress from '@/components/common/LoadingProgress.vue'
 const containerRef = ref<HTMLDivElement | null>(null);
 const loadingRef = ref<any>(null);
 
-const modelUrl = new URL('@/assets/Models/TYX/tyx_1.fbx', import.meta.url).href;
+const modelUrl = new URL('@/assets/Models/TYX/tyx_znbyq.fbx', import.meta.url).href;
 const modelUrl2 = new URL('@/assets/Models/TYX/tyx_2.fbx', import.meta.url).href;
 
 const initScene = async () => {
