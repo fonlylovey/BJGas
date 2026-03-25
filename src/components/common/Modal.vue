@@ -13,12 +13,11 @@
           <slot>
             <div class="contact-info">
               <p><strong>北京北燃环能科技发展有限公司</strong></p>
-              <p>地址：北京市（待补充）</p>
-              <p>电话：010-xxxx-xxxx</p>
-              <p>邮箱：contact@example.com</p>
+              <p>联系人：王浩</p>
+              <p>电话：18311335876</p>
             </div>
             <div class="contact-qrcode">
-              <span class="qrcode-placeholder">微信二维码占位</span>
+              <img src="@/assets/images/wechart.png"  />
             </div>
           </slot>
         </div>

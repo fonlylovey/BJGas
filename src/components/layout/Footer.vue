@@ -23,10 +23,22 @@
       <!-- 分隔符 2 -->
       <div class="separator"></div>
 
-      <!-- 第三组按钮 -->
+      <!-- 第三组按钮 → 增加选中样式 -->
       <div class="control-group">
-        <button class="control-btn" @click="onBoxStyle(1)">围栏样式1</button>
-        <button class="control-btn" @click="onBoxStyle(2)">围栏样式2</button>
+        <button 
+          class="control-btn" 
+          :class="{ checked: Style1Checked }" 
+          @click="onBoxStyle1()"
+        >
+          围栏样式1
+        </button>
+        <button 
+          class="control-btn" 
+          :class="{ checked: Style2Checked }" 
+          @click="onBoxStyle2()"
+        >
+          围栏样式2
+        </button>
       </div>
     </div>
   </footer>
@@ -35,13 +47,14 @@
 <script setup lang="ts">
 import * as ViewpointControl from '@/three3D/ViewpointControl'
 import { modelDB } from '@/three3D/ModelDB';
-import { compile, ref } from 'vue';
+import { ref } from 'vue';
 import * as THREE from 'three';
 import { Three3DInstance } from '@/three3D/Three3D';
 
 const boxVisible = ref(true);        // 外箱是否可见
 const boxTransparent = ref(false);   // 外箱是否透明
-const StyleIndex = ref(1);
+const Style1Checked = ref(false);
+const Style2Checked = ref(false);
 
 function zoomIn(){
   ViewpointControl.zoomIn();
@@ -53,94 +66,68 @@ function zoomOut(){
 
 // 切换外箱可见性
 function toggleBoxVisibility() {
-
   const newVisibility = !boxVisible.value;
-  if(StyleIndex.value == 1) {
-    modelDB.modelLsit.get("tyx_fence_1")!.visible = newVisibility;
-  } 
-  else if(StyleIndex.value == 2) {
-    modelDB.modelLsit.get("tyx_fence_2")!.visible = newVisibility;
-  }
   modelDB.modelLsit.get("tyx_box")!.visible = newVisibility;
-  //console.log("toggleBoxVisibility", modelDB.modelLsit.get("tyx_box"));
   boxVisible.value = newVisibility;
+  console.log(modelDB.modelLsit.get("tyx_box"), newVisibility);
 }
 
 // 切换外箱透明状态
 function toggleBoxTransparency() {
-
   const newTransparent = !boxTransparent.value;
-  let currentFence = null, currentBox = null;
-  if(StyleIndex.value == 1) {
-    currentFence = modelDB.modelLsit.get("tyx_fence_1");
-  } 
-  else if(StyleIndex.value == 2) {
-    currentFence = modelDB.modelLsit.get("tyx_fence_2");
-  }
+  let currentBox = null;
   currentBox = modelDB.modelLsit.get("tyx_box");
-  if (currentBox ) {
+  
+  if (currentBox) {
     currentBox.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        // 处理单个材质或材质数组
         const materials = Array.isArray(child.material) 
           ? child.material 
           : [child.material];
-        if(materials){
-            materials.forEach((mat) => {
-            mat.transparent = newTransparent;
-            mat.opacity = newTransparent ? 0.35 : 1.0;
-            mat.depthWrite = !newTransparent; //
-            mat.depthTest = !newTransparent; 
-            mat.needsUpdate = true;
-          });
-        }
-      }
-    });
-  }
-
-    if (currentFence ) {
-      currentFence.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        // 处理单个材质或材质数组
-        const materials = Array.isArray(child.material) 
-          ? child.material 
-          : [child.material];
-        if(materials){
-            materials.forEach((mat) => {
-            mat.transparent = newTransparent;
-            mat.opacity = newTransparent ? 0.35 : 1.0;
-            mat.depthWrite = !newTransparent; //
-            mat.depthTest = !newTransparent; 
-            mat.needsUpdate = true;
-          });
-        }
+        materials.forEach((mat) => {
+          mat.transparent = newTransparent;
+          mat.opacity = newTransparent ? 0.35 : 1.0;
+          mat.depthWrite = !newTransparent;
+          mat.depthTest = !newTransparent; 
+          mat.needsUpdate = true;
+        });
       }
     });
   }
   boxTransparent.value = newTransparent;
 }
 
-const onBoxStyle = (index: number) => {
+// 切换围栏样式
+const onBoxStyle1 = () => {
+  Style1Checked.value = !Style1Checked.value;
+  Style2Checked.value = false;
+  modelDB.modelLsit.get("tyx_fence_2")!.visible = false;
+  if(Style1Checked.value){
+    modelDB.modelLsit.get("tyx_fence_1")!.visible = true;
+  }
+  else{
+    modelDB.modelLsit.get("tyx_fence_1")!.visible = false;
+  }
   
+};
+
+const onBoxStyle2 = () => {
   const cameraData = Three3DInstance.getCameraPosition();
   if (cameraData) {
       console.log('相机位置:', cameraData.position);
       console.log('目标点:', cameraData.target);
   }
- StyleIndex.value = index;
- modelDB.modelLsit.forEach(item =>{
-  console.log("模型组件列表：", item.name);
- });
- if(index == 1) {
-    modelDB.modelLsit.get("tyx_fence_1")!.visible = true;
+  Style2Checked.value = !Style2Checked.value;
+  Style1Checked.value = false;
+  modelDB.modelLsit.get("tyx_fence_1")!.visible = false;
+  if(Style2Checked.value){
+    modelDB.modelLsit.get("tyx_fence_2")!.visible = true;
+  }
+  else{
     modelDB.modelLsit.get("tyx_fence_2")!.visible = false;
- } 
- else if(index == 2) {
-      modelDB.modelLsit.get("tyx_fence_1")!.visible = false;
-      modelDB.modelLsit.get("tyx_fence_2")!.visible = true;
- }
+  }
+  
 };
-
 </script>
 
 <style scoped>
@@ -154,20 +141,19 @@ const onBoxStyle = (index: number) => {
 
 .footer-controls {
   display: flex;
-  align-items: center; /* 🔥 让分隔符垂直居中 */
-  gap: 20px; /* 组之间的间距 */
+  align-items: center;
+  gap: 20px;
 }
 
 .control-group {
   display: flex;
-  gap: 9px; /* 组内按钮间距 */
+  gap: 9px;
 }
 
-/* 🔥 分隔符样式 */
 .separator {
   width: 1px;
   height: 30px;
-  background-color: #47494c; /* 浅灰色，很柔和 */
+  background-color: #47494c;
 }
 
 .control-btn-circle {
@@ -200,5 +186,12 @@ const onBoxStyle = (index: number) => {
   background-color: #f5f5f5;
   border-color: #1890ff;
   color: #1890ff;
+}
+
+/* 🔥 你要的选中样式：蓝色边框 + 蓝色文字 + 半透明蓝色背景 */
+.control-btn.checked {
+  border-color: #1890ff;
+  color: #1890ff;
+  background-color: rgba(24, 144, 255, 0.15);
 }
 </style>

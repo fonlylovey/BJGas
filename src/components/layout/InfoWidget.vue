@@ -24,7 +24,7 @@ defineProps<{
   right: 24px;
   bottom: 24px;
   width: 320px;
-  max-height: 45vh;
+  max-height: 80vh;
   padding: 20px;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px);

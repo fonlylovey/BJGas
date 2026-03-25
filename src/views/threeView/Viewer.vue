@@ -33,6 +33,7 @@ const modelUrl2 = new URL('@/assets/Models/TYX/tyx_box.fbx', import.meta.url).hr
 const modelUrl3 = new URL('@/assets/Models/TYX/tyx_znbyq.fbx', import.meta.url).href;
 const modelUrl4 = new URL('@/assets/Models/TYX/tyx_fence_1.fbx', import.meta.url).href;
 const modelUrl5 = new URL('@/assets/Models/TYX/tyx_fence_2.fbx', import.meta.url).href;
+const modelUrl6 = new URL('@/assets/Models/TYX/tyx_power.fbx', import.meta.url).href;
 
 const initScene = async () => {
   //加载调压箱主体
@@ -52,8 +53,10 @@ const initScene = async () => {
     model.traverse((child) => {
     if (child) {
       child.layers.set(1);
+      console.log("主体零部件：", child.name);
     }
   });
+  modelDB.modelLsit.set("tyx_body", model);
   } catch (error) {
     loadingRef.value?.hide();
     console.error('加载失败', error);
@@ -70,7 +73,7 @@ const initScene = async () => {
   //加载第一个围栏
   try {
     const model = await modelDB.loadFBXModel(modelUrl4);
-    model.visible = true;
+    model.visible = false;
     Three3DInstance.addObject(model);
     modelDB.modelLsit.set("tyx_fence_1", model);
     console.log("围栏1", model);
@@ -79,12 +82,12 @@ const initScene = async () => {
   //加载第二个围栏
   try {
     const model = await modelDB.loadFBXModel(modelUrl5);
-    model.scale.set(0.01, 0.01, 0.01);
     model.visible = false;
     Three3DInstance.addObject(model);
     modelDB.modelLsit.set("tyx_fence_2", model);
     console.log("围栏2", model);
   } catch (error) {
+    console.log("围栏2加载失败");
   }
 
   //加载智能变压器
@@ -93,6 +96,15 @@ const initScene = async () => {
     model.visible = false;
     Three3DInstance.addObject(model);
     modelDB.modelLsit.set("tyx_znbyq", model);
+  } catch (error) {
+  }
+
+  //自驱动电源
+  try {
+    const model = await modelDB.loadFBXModel(modelUrl6);
+    model.visible = false;
+    Three3DInstance.addObject(model);
+    modelDB.modelLsit.set("tyx_power", model);
   } catch (error) {
   }
 };

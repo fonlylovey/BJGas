@@ -5,7 +5,7 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js"
 import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js"
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js"
 import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js"
-
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 
 export class Three3D {
   // 单例实例
@@ -28,9 +28,6 @@ export class Three3D {
   public mouse: THREE.Vector2 | null = null;
   public currentHovered: THREE.Object3D | null = null;
   public currentSelected: THREE.Object3D | null = null;
-
-  //保存原始材质属性，用于恢复
-  private originalMaterials: Map<number, { color: THREE.Color; emissive: THREE.Color; emissiveIntensity: number }> = new Map();
 
 
   // 私有构造函数（单例模式）
@@ -109,6 +106,8 @@ export class Three3D {
     const fillLight = new THREE.DirectionalLight(0xffffff, 0.4);
     fillLight.position.set(-3, 4, -3);
     this.scene.add(fillLight);
+
+    this.createCornerLogoMesh();
     /*
     let geom = new THREE.BoxGeometry(1, 1, 1);
     const mesh = new THREE.Mesh(geom);
@@ -123,6 +122,8 @@ export class Three3D {
 
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
+
+    this.initOutlineEffect();
   }
 
   // 渲染循环
@@ -151,38 +152,82 @@ export class Three3D {
     }
   }
 
+// 切换外箱透明状态
+public TransparencyObject(object: THREE.Object3D, opacity: boolean) {  
+  if (object && object instanceof THREE.Mesh) {
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+     materials.forEach((mat) => {
+          mat.transparent = opacity;
+          mat.opacity = opacity ? 0.01 : 1.0;
+          mat.depthWrite = !opacity;
+          mat.depthTest = !opacity; 
+          mat.needsUpdate = true;
+        });
+  }
+}
+
+public initOutlineEffect(): void {
+    if (!this.renderer || !this.scene || !this.camera) return;
+    
+    // 创建 EffectComposer
+    this.composer = new EffectComposer(this.renderer);
+    
+    // 添加 RenderPass
+    const renderPass = new RenderPass(this.scene, this.camera);
+    this.composer.addPass(renderPass);
+    
+    // 创建 OutlinePass，初始不选中任何物体
+    this.outlinePass = new OutlinePass(
+        new THREE.Vector2(window.innerWidth, window.innerHeight),
+        this.scene,
+        this.camera,
+        []  // 初始为空数组
+    );
+    // 设置参数（可调整到合适值）
+    this.outlinePass.edgeStrength = 3.0;      // 降低强度避免过度影响亮度
+    this.outlinePass.edgeGlow = 0.5;          // 适当减小光晕
+    this.outlinePass.edgeThickness = 1.0;
+    this.outlinePass.pulsePeriod = 2;
+    this.outlinePass.visibleEdgeColor.set(0x00ff00);
+    this.outlinePass.hiddenEdgeColor.set(0x000000);
+    this.outlinePass.clear = true;
+    this.composer.addPass(this.outlinePass);
+    
+    // 可选：添加 FXAA 抗锯齿（注意顺序，一般放在最后）
+    const effectFXAA = new ShaderPass(FXAAShader);
+    effectFXAA.uniforms.resolution.value.set(1 / window.innerWidth, 1 / window.innerHeight);
+    effectFXAA.renderToScreen = true; // 最后一个通道需要设置为 true
+    this.composer.addPass(effectFXAA);
+
+    // 添加 OutputPass 作为最终输出
+    const outputPass = new OutputPass();
+    outputPass.renderToScreen = true; // 最后一个 pass 必须设置为 true
+    this.composer.addPass(outputPass);
+}
+
   public highLightObject(selectedObject: THREE.Object3D): void{
-    if(this.renderer && this.scene && this.camera){
-        // 创建一个EffectComposer（效果组合器）对象，然后在该对象上添加后期处理通道。
-        this.composer = new EffectComposer(this.renderer)
-        // 新建一个场景通道  为了覆盖到原理来的场景上
-        this.renderPass = new RenderPass(this.scene, this.camera)
-        this.composer.addPass(this.renderPass);
-        // 物体边缘发光通道
-        this.outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), this.scene, this.camera, [selectedObject])
-        this.outlinePass.selectedObjects = [selectedObject]
-        this.outlinePass.edgeStrength = 10.0 // 边框的亮度
-        this.outlinePass.edgeGlow = 1// 光晕[0,1]
-        this.outlinePass.usePatternTexture = false // 是否使用父级的材质
-        this.outlinePass.edgeThickness = 1.0 // 边框宽度
-        this.outlinePass.downSampleRatio = 1 // 边框弯曲度
-        this.outlinePass.pulsePeriod = 5 // 呼吸闪烁的速度
-        this.outlinePass.visibleEdgeColor.set(0x00ff00) // 呼吸显示的颜色
-        this.outlinePass.hiddenEdgeColor = new THREE.Color(0, 0, 0) // 呼吸消失的颜色
-        this.outlinePass.clear = true
-        this.composer.addPass(this.outlinePass)
-        // 自定义的着色器通道 作为参数
-        var effectFXAA = new ShaderPass(FXAAShader)
-        effectFXAA.uniforms.resolution.value.set(1 / window.innerWidth, 1 / window.innerHeight)
-        effectFXAA.renderToScreen = true
-        this.composer.addPass(effectFXAA);
-        this.currentSelected = selectedObject;
+    if (!this.composer || !this.outlinePass) {
+        // 如果尚未初始化，先初始化（通常应在场景加载时调用一次）
+        this.initOutlineEffect();
     }
+    if (this.outlinePass) {
+        this.outlinePass.selectedObjects.push(selectedObject);
+        // 如果需要临时修改参数，也可以在这里调整
+        // this.outlinePass.edgeStrength = 10.0;
+    }
+    this.currentSelected = selectedObject;
   }
 
   public unhighlightObject(object: THREE.Object3D): void {
-    this.currentSelected = null;
-    this.composer = null;                                                                       
+    if (this.outlinePass) {
+        const index = this.outlinePass.selectedObjects.indexOf(object);
+        if (index !== -1) {
+            this.outlinePass.selectedObjects.splice(index, 1);
+        }
+        if (this.outlinePass.selectedObjects.length === 0) {
+            this.currentSelected = null;
+        }
+    }                                                     
   }
 
   public animateCameraTo(position: THREE.Vector3, target: THREE.Vector3) {
@@ -371,7 +416,7 @@ public createCornerLogoMesh = () => {
     logoPlanes.push(plane);
 
     const stand = this.createLogoStand(0.85, 0.69);
-    //corner.add(stand);
+    corner.add(stand);
 
     logoGroup.add(corner);
     });
@@ -387,7 +432,7 @@ public createCornerLogoMesh = () => {
     logo2Planes.push(plane);
 
     const stand = this.createLogoStand(0.95, 0.55);
-    //side.add(stand);
+    side.add(stand);
 
     logoGroup.add(side);
     });

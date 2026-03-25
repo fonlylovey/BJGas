@@ -116,6 +116,13 @@ const updateProgress = () => {
     } else {
       progressPercent.value = elapsed / borderDuration.value;
     }
+    console.log("update", currentAutoIndex.value);
+    if(currentAutoIndex.value == 6){
+        modelDB.modelLsit.get("tyx_power")!.rotation.y += 0.5 * 0.1;
+      }else if(currentAutoIndex.value == 7){
+          modelDB.modelLsit.get("tyx_znbyq")!.rotation.y += 0.5 * 0.1;
+      }
+
   };
   
   update();
@@ -144,16 +151,46 @@ const onClicked = (index: number) => {
     new THREE.Vector3(segment.camera.pos[0], segment.camera.pos[1], segment.camera.pos[2]),
     new THREE.Vector3(segment.camera.target[0], segment.camera.target[1], segment.camera.target[2])
   );
+  modelDB.modelLsit.get("tyx_znbyq")!.visible = false;
+  modelDB.modelLsit.get("tyx_power")!.visible = false;
+  if(index == 0){
+  let bodyObj = modelDB.modelLsit.get("tyx_body");
+  
+  if(bodyObj){
+    bodyObj.visible = true;
+     bodyObj.traverse((child) => {
+      child.visible = true;
+      Three3DInstance.TransparencyObject(child, false)
+    });
+    }
+  }
+  else{
+    highlightComponent(segment.highlightParts);
+  }
 
   if (index == 7) {
-    modelDB.modelLsit.forEach((value, key) => {
-      value.visible = false;
-    });
+    modelDB.modelLsit.get("tyx_box")!.visible = false;
     modelDB.modelLsit.get("tyx_znbyq")!.visible = true;
     modelDB.modelLsit.get("tyx_znbyq")!.traverse((child) => {
       child.visible = true;
     });
-    console.log("tyx_znbyq", modelDB.modelLsit.get("tyx_znbyq"));
+  }
+
+  if (index == 6) {
+    modelDB.modelLsit.get("tyx_box")!.visible = false;
+    modelDB.modelLsit.get("tyx_power")!.visible = true;
+  }
+}
+
+const highlightComponent = (components: any) => {
+  const ids = new Set(components);
+  console.log("高亮部件", ids);
+  let bodyObj = modelDB.modelLsit.get("tyx_body");
+  if(bodyObj){
+     bodyObj.traverse((child) => {
+     const highlight = ids.has(child.name);
+      highlight ? Three3DInstance.unhighlightObject(child) : Three3DInstance.highLightObject(child);
+    });
     
   }
 }
@@ -181,6 +218,27 @@ const nextButton = () => {
     new THREE.Vector3(segment.camera.pos[0], segment.camera.pos[1], segment.camera.pos[2]),
     new THREE.Vector3(segment.camera.target[0], segment.camera.target[1], segment.camera.target[2])
   );
+
+  highlightComponent(segment.highlightParts);
+  if (nextIndex == 7) {
+    modelDB.modelLsit.forEach((value, key) => {
+      value.visible = false;
+    });
+    modelDB.modelLsit.get("tyx_znbyq")!.visible = true;
+    modelDB.modelLsit.get("tyx_znbyq")!.traverse((child) => {
+      child.visible = true;
+    });
+  }
+
+  if (nextIndex == 6) {
+    modelDB.modelLsit.forEach((value, key) => {
+      value.visible = false;
+    });
+    modelDB.modelLsit.get("tyx_power")!.visible = true;
+    modelDB.modelLsit.get("tyx_power")!.traverse((child) => {
+      child.visible = true;
+    });
+  }
 }
 
 // 开始自动播放
@@ -209,7 +267,7 @@ const startAutoPlay = () => {
   autoPlayTimer = setInterval(() => {
     nextButton();
   }, borderDuration.value);
-  setModelComponentVisibility("调压箱01", false);
+  modelDB.modelLsit.get("tyx_box")!.visible = false;
 }
 
 // 停止自动播放
@@ -225,8 +283,7 @@ const stopAutoPlay = () => {
   isAutoPlaying.value = false;
   currentAutoIndex.value = -1;
   progressPercent.value = 0;
-  setModelComponentVisibility("调压箱01", true);
-  
+  modelDB.modelLsit.get("tyx_box")!.visible = true;
   // 停止自动播放后，重新启动空闲计时器
   resetIdleTimer();
 }
@@ -398,7 +455,7 @@ function setModelComponentTransparency(name: string, visible: boolean) {
 .nav-pills.auto-playing .pill-wrapper.active .button {
   position: relative;
   z-index: 1;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(0, 102, 204, 0.25);
   border: 1px solid rgba(0, 102, 204, 0.3);
   box-shadow: 0 2px 12px rgba(0, 102, 204, 0.2);
 }
@@ -429,8 +486,10 @@ function setModelComponentTransparency(name: string, visible: boolean) {
   transform: translateY(-1px);
 }
 
-.button:active {
-  transform: translateY(1px);
+.button.active {
+  color: #0066cc;
+  background: rgba(0, 102, 204, 0.15);
+  box-shadow: 0 2px 16px rgba(0, 102, 204, 0.2);
 }
 
 .button-model {
